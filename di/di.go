@@ -27,7 +27,7 @@ func InitServer(cnf *config.EnvModel) (*api.ServerHTTP, error) {
 	groupService := service.InitGroupService(groupRepo)
 	groupHandler := handler.InitGroupHandler(groupService, jwt)
 
-	server := api.NewServerHTTP(authHandler, groupHandler, authorization)
+	server := api.Handler(authHandler, groupHandler, authorization)
 
 	if err != nil {
 		return nil, err
