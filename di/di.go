@@ -6,8 +6,8 @@ import (
 	"splitz/config"
 	"splitz/database"
 	"splitz/repository"
+	handler "splitz/server/handlers"
 	"splitz/server/middlewares"
-	handler "splitz/server/request_handlers"
 	"splitz/service"
 )
 
