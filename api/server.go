@@ -1,7 +1,7 @@
 package api
 
 import (
-	"splitz/api/handler"
+	"splitz/api/request_handlers"
 	"splitz/api/middlewares"
 	"splitz/config"
 

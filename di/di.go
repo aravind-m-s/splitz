@@ -2,8 +2,8 @@ package di
 
 import (
 	"splitz/api"
-	"splitz/api/handler"
 	"splitz/api/middlewares"
+	handler "splitz/api/request_handlers"
 	"splitz/common"
 	"splitz/config"
 	"splitz/database"
