@@ -1,8 +1,9 @@
 package api
 
 import (
-	"splitz/api/request_handlers"
+	"net/http"
 	"splitz/api/middlewares"
+	handler "splitz/api/request_handlers"
 	"splitz/config"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,10 @@ import (
 
 type ServerHTTP struct {
 	engine *gin.Engine
+}
+
+func NewHandlerFunc(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func Handler(authHandler *handler.AuthHandlerStruct, groupHandler *handler.GroupHandler, middleWare *middlewares.AuthorizationStruct) *ServerHTTP {
