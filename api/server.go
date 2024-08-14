@@ -2,9 +2,9 @@ package api
 
 import (
 	"net/http"
+	handler "splitz/api/handlers"
+	"splitz/api/middlewares"
 	"splitz/config"
-	handler "splitz/server/handlers"
-	"splitz/server/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
