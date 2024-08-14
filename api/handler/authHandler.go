@@ -7,19 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthHandler struct {
+type AuthHandlerStruct struct {
 	service service.AuthServiceInterface
 	cnf     *config.EnvModel
 }
 
-func InitAuthHandler(service service.AuthServiceInterface, cnf *config.EnvModel) *AuthHandler {
-	return &AuthHandler{service: service, cnf: cnf}
+func AuthHandler(service service.AuthServiceInterface, cnf *config.EnvModel) *AuthHandlerStruct {
+	return &AuthHandlerStruct{service: service, cnf: cnf}
 }
 
-func (a *AuthHandler) Login(c *gin.Context) {
+func (a *AuthHandlerStruct) Login(c *gin.Context) {
 	a.service.Login(c)
 }
 
-func (a *AuthHandler) Register(c *gin.Context) {
+func (a *AuthHandlerStruct) Register(c *gin.Context) {
 	a.service.Register(c)
 }

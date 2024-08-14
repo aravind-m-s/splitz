@@ -20,7 +20,7 @@ func InitServer(cnf *config.EnvModel) (*api.ServerHTTP, error) {
 	// Authorization
 	authRepo := repository.InitAuthRepo(db)
 	authService := service.InitAuthService(authRepo, jwt)
-	authHandler := handler.InitAuthHandler(authService, cnf)
+	authHandler := handler.AuthHandler(authService, cnf)
 
 	// Group
 	groupRepo := repository.InitGroupRepo(db)
