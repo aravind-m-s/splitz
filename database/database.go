@@ -16,6 +16,8 @@ func InitDatabase(cnf *config.EnvModel) (*gorm.DB, error) {
 	db.AutoMigrate(&domain.User{})
 	db.AutoMigrate(&domain.Group{})
 	db.AutoMigrate(&domain.UserGroup{})
+	db.AutoMigrate(&domain.Request{})
+	db.AutoMigrate(&domain.UserRequest{})
 
 	return db, err
 

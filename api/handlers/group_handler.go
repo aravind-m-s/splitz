@@ -51,7 +51,13 @@ func (a *GroupHandler) GroupDetails(c *gin.Context) {
 		return
 	}
 
-	group := a.service.GroupDetails(groupId, userId)
+	group, err := a.service.GroupDetails(groupId, userId)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid group Id"})
+		return
+	}
+
 	c.JSON(http.StatusOK, group)
 }
 
@@ -99,4 +105,8 @@ func (a *GroupHandler) GetUserList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+func (a *GroupHandler) CreateRequest(c *gin.Context) {
+
 }

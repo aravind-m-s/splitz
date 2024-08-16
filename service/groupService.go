@@ -15,7 +15,7 @@ import (
 type GroupServiceInterface interface {
 	CreateGroup(c *gin.Context, cnf *common.JWTStruct) (data domain.GroupListResponse)
 	DeleteGroup(id string) (data domain.GroupListResponse)
-	GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse)
+	GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse, errorMessage error)
 	ListGroup(userId string) (data []domain.GroupListResponse, groupError error)
 	UpdateGroup(id string) (data domain.GroupListResponse)
 	GetUserList(contacts []string) (response gin.H, listError error)
@@ -112,7 +112,7 @@ func (d *groupServiceStruct) DeleteGroup(id string) (data domain.GroupListRespon
 	return d.repo.DeleteGroup(id)
 }
 
-func (d *groupServiceStruct) GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse) {
+func (d *groupServiceStruct) GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse, errorMessage error) {
 
 	return d.repo.GroupDetails(id, userId)
 }

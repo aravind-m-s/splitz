@@ -15,7 +15,7 @@ type GroupRepoInterface interface {
 	CreateUserGroup(name string, image string, user string, groupId uuid.UUID) (err error)
 	DeleteGroup(id string) (data domain.GroupListResponse)
 	GetSingleUsers(id string) (status bool, erroMsg string)
-	GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse)
+	GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse, errorMessage error)
 	ListGroup(userId string) (data []domain.GroupListResponse, err error)
 	UpdateGroup(id string) (data domain.GroupListResponse)
 	GetUserList(contacts []string) (response gin.H, listError error)
@@ -52,6 +52,7 @@ func (d *groupDbStruct) CreateGroup(name string, image string, admin string) (id
 }
 
 func (d *groupDbStruct) CreateUserGroup(name string, image string, user string, groupId uuid.UUID) (errorMsg error) {
+
 	userId, userErr := uuid.Parse(user)
 
 	if userErr != nil {
@@ -94,11 +95,22 @@ func (d *groupDbStruct) GetSingleUsers(id string) (status bool, errorMsg string)
 	}
 }
 
-func (d *groupDbStruct) GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse) {
+func (d *groupDbStruct) GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse, errorMessage error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			errorMessage = fmt.Errorf("group does not exist")
+		}
+	}()
 
 	var users []domain.UserListResponse
 	var userGroups []domain.UserGroup
-	d.DB.Preload("Group").Preload("User").Where("group_id = ?", id).Find(&userGroups)
+
+	err := d.DB.Preload("Group").Preload("User").Where("group_id = ?", id).Find(&userGroups).Error
+
+	if err != nil {
+		return domain.GroupDetailsResponse{}, err
+	}
 
 	for _, userGroup := range userGroups {
 		users = append(users, userGroup.User.ToGroupDetailsUser(userGroup.Group.AdminID == userGroup.UserID))
@@ -108,7 +120,7 @@ func (d *groupDbStruct) GroupDetails(id string, userId uuid.UUID) (data domain.G
 		Name:  userGroups[len(userGroups)-1].Group.Name,
 		Image: userGroups[len(userGroups)-1].Group.Image,
 		Users: users,
-	}
+	}, nil
 }
 
 func (d *groupDbStruct) ListGroup(userId string) (data []domain.GroupListResponse, groupError error) {

@@ -13,6 +13,7 @@ type Request struct {
 	OwnerID uuid.UUID `gorm:"not null;index"`
 	Owner   User      `gorm:"foreignKey:OwnerID"`
 	GroupID uuid.UUID `gorm:"not null;index"`
-	Group   User      `gorm:"foreignKey:GroupID"`
+	Group   Group     `gorm:"foreignKey:GroupID"`
+	Type    string    `gorm:"not null"`
 	Status  bool      `gorm:"not null"`
 }

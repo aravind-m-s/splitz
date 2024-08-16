@@ -17,7 +17,7 @@ func NewHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func Handler(authHandler *handler.AuthHandlerStruct, groupHandler *handler.GroupHandler, middleWare *middlewares.AuthorizationStruct) *ServerHTTP {
+func Handler(authHandler *handler.AuthHandlerStruct, groupHandler *handler.GroupHandler, requestHandler *handler.RequestHandler, middleWare *middlewares.AuthorizationStruct) *ServerHTTP {
 	engine := gin.New()
 
 	engine.Use(gin.Logger())
@@ -39,6 +39,10 @@ func Handler(authHandler *handler.AuthHandlerStruct, groupHandler *handler.Group
 	groupEngine.PUT("/:id", groupHandler.UpdateGroup)
 	groupEngine.DELETE("/:id", groupHandler.DeleteGroup)
 	groupEngine.POST("/users/list", groupHandler.GetUserList)
+
+	requestEngine := groupEngine.Group("/request")
+
+	requestEngine.POST("/create", requestHandler.CreateRequest)
 
 	return &ServerHTTP{engine: engine}
 }
