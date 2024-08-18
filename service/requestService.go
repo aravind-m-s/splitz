@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"splitz/common"
-	"splitz/domain"
 	"splitz/repository"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,9 @@ import (
 )
 
 type RequestServiceInterface interface {
-	CreateRequest(c *gin.Context, cnf *common.JWTStruct) (data domain.GroupListResponse)
+	CreateRequest(c *gin.Context, cnf *common.JWTStruct)
+	PayShare(c *gin.Context)
+	ListRequest(c *gin.Context)
 }
 
 type requestServiceStruct struct {
@@ -26,7 +28,7 @@ func InitRequestService(repo repository.RequestInterface, service GroupServiceIn
 	return &requestServiceStruct{repo: repo, service: service}
 }
 
-func (d *requestServiceStruct) CreateRequest(c *gin.Context, cnf *common.JWTStruct) (data domain.GroupListResponse) {
+func (d *requestServiceStruct) CreateRequest(c *gin.Context, cnf *common.JWTStruct) {
 
 	s := c.Request.Header.Get("Authorization")
 
@@ -76,22 +78,88 @@ func (d *requestServiceStruct) CreateRequest(c *gin.Context, cnf *common.JWTStru
 		return
 	}
 
-	requestId, err := d.repo.CreateRequest(requestType, note, amount, groupId, ownerId)
+	createErr := d.repo.CreateRequest(requestType, note, amount, groupId, ownerId, users)
+
+	if createErr != "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, createErr)
+	} else {
+		c.JSON(http.StatusCreated, gin.H{"message": "Request created successfully"})
+	}
+
+	return
+}
+
+func (d *requestServiceStruct) PayShare(c *gin.Context) {
+
+	request := c.Param("id")
+
+	group := c.PostForm("group_id")
+	user := c.PostForm("user_id")
+
+	requestId, reqErr := uuid.Parse(request)
+
+	if reqErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid Request Id"})
+		return
+
+	}
+
+	groupId, groupErr := uuid.Parse(group)
+
+	if groupErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid Group Id"})
+		return
+
+	}
+
+	userId, userErr := uuid.Parse(user)
+
+	if userErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid User Id"})
+		return
+	}
+
+	amount := c.PostForm("amount")
+
+	paidAmount, strConvErr := strconv.ParseFloat(amount, 64)
+
+	if strConvErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid Amount"})
+		return
+	}
+
+	err := d.repo.PayShare(requestId, groupId, userId, paidAmount)
 
 	if err != nil {
-
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
-	for _, user := range users {
-		userErr := d.repo.CreateUserRequest(requestId, user["amount"], user["id"])
-		if userErr != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Unable to create user for request"})
-			return
-		}
+	c.JSON(http.StatusOK, gin.H{"message": "Share paid successfully"})
+
+	return
+}
+
+func (d *requestServiceStruct) ListRequest(c *gin.Context) {
+
+	group := c.Param("id")
+
+	groupId, groupErr := uuid.Parse(group)
+
+	if groupErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid Group Id"})
+		return
+
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Request created successfully"})
+	err, userReqs := d.repo.ListRequest(groupId)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": userReqs})
+
 	return
 }

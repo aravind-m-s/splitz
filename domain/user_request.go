@@ -16,3 +16,10 @@ type UserRequest struct {
 	Paid      float64   `gorm:"not null;default:0"`
 	Status    bool      `gorm:"not null;default:true"`
 }
+
+type UserRequestList struct {
+	ID    uuid.UUID        `json:"id"`
+	User  UserListResponse `json:"user"`
+	Share float64          `json:"share"`
+	Paid  float64          `json:"paid"`
+}

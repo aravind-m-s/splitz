@@ -43,6 +43,8 @@ func Handler(authHandler *handler.AuthHandlerStruct, groupHandler *handler.Group
 	requestEngine := groupEngine.Group("/request")
 
 	requestEngine.POST("/create", requestHandler.CreateRequest)
+	requestEngine.POST("/pay/:id", requestHandler.PayShare)
+	requestEngine.GET("/list/:id", requestHandler.ListRequest)
 
 	return &ServerHTTP{engine: engine}
 }

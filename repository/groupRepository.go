@@ -11,8 +11,7 @@ import (
 )
 
 type GroupRepoInterface interface {
-	CreateGroup(name string, image string, admin string) (id uuid.UUID, err error)
-	CreateUserGroup(name string, image string, user string, groupId uuid.UUID) (err error)
+	CreateGroup(name string, image string, admin string, users []string) (errorMsg string)
 	DeleteGroup(id string) (data domain.GroupListResponse)
 	GetSingleUsers(id string) (status bool, erroMsg string)
 	GroupDetails(id string, userId uuid.UUID) (data domain.GroupDetailsResponse, errorMessage error)
@@ -29,11 +28,22 @@ func InitGroupRepo(db *gorm.DB) GroupRepoInterface {
 	return &groupDbStruct{DB: db}
 }
 
-func (d *groupDbStruct) CreateGroup(name string, image string, admin string) (id uuid.UUID, errorMsg error) {
+func (d *groupDbStruct) CreateGroup(name string, image string, admin string, users []string) (errorMsg string) {
+
+	tx := d.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			errorMsg = "Internal Server error"
+		}
+	}()
+
 	adminId, adminErr := uuid.Parse(admin)
 
 	if adminErr != nil {
-		return uuid.Max, adminErr
+		tx.Rollback()
+		return adminErr.Error()
 	}
 
 	group := domain.Group{
@@ -42,35 +52,43 @@ func (d *groupDbStruct) CreateGroup(name string, image string, admin string) (id
 		AdminID: adminId,
 	}
 
-	dbErr := d.DB.Create(&group).Error
+	dbErr := tx.Create(&group).Error
+
 	if dbErr != nil {
-		return uuid.Max, dbErr
-	} else {
-		return group.ID, nil
+		tx.Rollback()
+		return dbErr.Error()
 	}
 
-}
+	tx.Commit()
 
-func (d *groupDbStruct) CreateUserGroup(name string, image string, user string, groupId uuid.UUID) (errorMsg error) {
+	for _, user := range users {
 
-	userId, userErr := uuid.Parse(user)
+		userId, userErr := uuid.Parse(user)
 
-	if userErr != nil {
-		return userErr
+		if userErr != nil {
+			tx.Rollback()
+			tx.Delete(&group)
+			return userErr.Error()
+		}
+
+		userGroup := domain.UserGroup{
+			UserID:  userId,
+			GroupID: group.ID,
+		}
+
+		dbErr := d.DB.Create(&userGroup).Error
+
+		if dbErr != nil {
+			fmt.Printf("dbErr.Error(): %v\n", dbErr.Error())
+			tx.Rollback()
+			tx.Delete(&group)
+			return dbErr.Error()
+		}
 	}
 
-	group := domain.UserGroup{
-		UserID:  userId,
-		GroupID: groupId,
-	}
+	tx.Commit()
 
-	dbErr := d.DB.Create(&group).Error
-	if dbErr != nil {
-		return dbErr
-	} else {
-		return nil
-	}
-
+	return ""
 }
 
 func (d *groupDbStruct) DeleteGroup(id string) (data domain.GroupListResponse) {

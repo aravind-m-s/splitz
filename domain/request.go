@@ -17,3 +17,12 @@ type Request struct {
 	Type    string    `gorm:"not null"`
 	Status  bool      `gorm:"not null"`
 }
+
+type RequestList struct {
+	ID     uuid.UUID         `json:"id"`
+	Note   string            `json:"note"`
+	Amount float64           `json:"amount"`
+	Paid   float64           `json:"paid"`
+	Type   string            `json:"type"`
+	Splits []UserRequestList `json:"shares"`
+}

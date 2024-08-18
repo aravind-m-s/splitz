@@ -87,20 +87,11 @@ func (d *groupServiceStruct) CreateGroup(c *gin.Context, cnf *common.JWTStruct) 
 
 	filePath = c.Request.Host + "/media/" + name + imageData.Filename
 
-	id, err := d.repo.CreateGroup(name, filePath, admin)
+	createErr := d.repo.CreateGroup(name, filePath, admin, users)
 
-	if err != nil {
+	if createErr != "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Unable to create group"})
-	}
-
-	for _, user := range users {
-
-		err := d.repo.CreateUserGroup(name, filePath, user, id)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
-		}
-
+		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Group created successfully"})

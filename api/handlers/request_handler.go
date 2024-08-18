@@ -19,3 +19,11 @@ func InitRequestHandler(service service.RequestServiceInterface, cnf *common.JWT
 func (a *RequestHandler) CreateRequest(c *gin.Context) {
 	a.service.CreateRequest(c, a.cnf)
 }
+
+func (a *RequestHandler) PayShare(c *gin.Context) {
+	a.service.PayShare(c)
+}
+
+func (a *RequestHandler) ListRequest(c *gin.Context) {
+	a.service.ListRequest(c)
+}

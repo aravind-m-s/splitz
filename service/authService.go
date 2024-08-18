@@ -120,6 +120,7 @@ func (a *authServiceStruct) Register(c *gin.Context) {
 	id, err := a.repo.Register(user)
 
 	if len(err) != 0 {
+
 		statusCode := http.StatusBadRequest
 		if err == "Internal Server error" {
 			statusCode = http.StatusInternalServerError
